@@ -33,11 +33,11 @@ function build_busybox()
 	echo "== Build Busybox =="
 	rm -rf $TOP/obj/busybox-$ARCH
 	cd $TOP/$BUSYBOX_DIR
-	mkdir -pv ../obj/busybox-$ARCH
+	mkdir -pv $TOP/obj/busybox-$ARCH
 	cp $TOP/config/$BUSYBOX_CONFIG ./.config
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=../obj/busybox-$ARCH oldconfig
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/busybox-$ARCH oldconfig
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE mrproper
-	cd ../obj/busybox-$ARCH
+	cd $TOP/obj/busybox-$ARCH
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE -j6
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE install
 	cd -
@@ -77,9 +77,9 @@ function build_linux_5_6()
 	cd $TOP/$LINUX_DIR
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE distclean
 	cp $TOP/config/$LINUX_CONFIG arch/$ARCH/configs/my_defconfig
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=../obj/linux-$ARCH my_defconfig
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=../obj/linux-$ARCH -j6
-	if [ ! -f ../obj/linux-$ARCH/vmlinux ]
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH my_defconfig
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH -j6
+	if [ ! -f $TOP/obj/linux-$ARCH/vmlinux ]
 	then
 		echo "Error: Failed to build Linux"
 		exit 1
