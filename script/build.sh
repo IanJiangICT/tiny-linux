@@ -12,8 +12,12 @@ BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-min
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initrd
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d05261647
 
-BUSYBOX_DIR=busybox-$BUSYBOX_VER
-LINUX_DIR=linux-$LINUX_VER
+if [ -z $BUSYBOX_DIR ]; then
+	BUSYBOX_DIR=busybox-$BUSYBOX_VER
+fi
+if [ -z $LINUX_DIR ]; then
+	LINUX_DIR=linux-$LINUX_VER
+fi
 INITRAMFS_DIR=obj/initramfs/$ARCH
 BBL_DIR=obj/bbl
 
@@ -127,13 +131,13 @@ fi
 
 if [ ! -d $LINUX_DIR ]
 then
-	echo "Linux source not found"
+	echo "Linux source $LINUX_DIR not found"
 	exit 1
 fi
 
 if [ ! -d $BUSYBOX_DIR ]
 then
-	echo "Busybox source not found"
+	echo "Busybox source $BUSYBOX_DIR not found"
 	exit 1
 fi
 
