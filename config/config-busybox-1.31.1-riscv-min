@@ -197,9 +197,9 @@ CONFIG_GZIP_FAST=0
 # Coreutils
 #
 # CONFIG_BASENAME is not set
-# CONFIG_CAT is not set
-# CONFIG_FEATURE_CATN is not set
-# CONFIG_FEATURE_CATV is not set
+CONFIG_CAT=y
+CONFIG_FEATURE_CATN=y
+CONFIG_FEATURE_CATV=y
 # CONFIG_CHGRP is not set
 # CONFIG_CHMOD is not set
 # CONFIG_CHOWN is not set
