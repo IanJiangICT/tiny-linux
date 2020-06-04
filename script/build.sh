@@ -54,15 +54,15 @@ function build_initramfs()
 	mkdir -pv $TOP/$INITRAMFS_DIR
 	cd $TOP/$INITRAMFS_DIR
 	mkdir -pv {bin,sbin,dev,etc,proc,sys,usr/{bin,sbin}}
-	#cp --archive /dev/{null,zero,console,ttyS0} ./dev/
 	cp -av $TOP/obj/busybox-$ARCH/_install/* .
+	sudo mknod dev/ttyS0 c 5 1
 	> ./init
 	echo "#!/bin/busybox sh" >> ./init
 	echo "" >> ./init
 	#echo "/bin/busybox --install -s" >> ./init
 	echo "mount -t proc none /proc" >> ./init
 	echo "mount -t sysfs none /sys" >> ./init
-	echo "mount -t devtmpfs devtmpfs /dev" >> ./init
+	#echo "mount -t devtmpfs devtmpfs /dev" >> ./init
 	echo "echo -e \"\nBoot took \$(cut -d' ' -f1 /proc/uptime) seconds\\n\" >> /dev/ttyS0" >> ./init
 	echo "exec setsid sh -c 'exec sh </dev/ttyS0 >/dev/ttyS0 2>&1'" >> ./init
 	chmod +x ./init
