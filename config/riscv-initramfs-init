@@ -1,0 +1,11 @@
+#!/bin/busybox sh
+
+mount -t proc none /proc
+mount -t sysfs none /sys
+echo -e "\nBoot took $(cut -d' ' -f1 /proc/uptime) seconds\n" >> /dev/ttyS0
+
+#ls -l / >> /dev/ttyS0
+#ls -l /dev >> /dev/ttyS0
+#ls -l /bin >> /dev/ttyS0
+
+/bin/busybox sh < /dev/ttyS0 > /dev/ttyS0 2>&1

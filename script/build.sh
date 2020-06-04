@@ -11,6 +11,7 @@ BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-initrd
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-min
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initrd
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d05261647
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041530
 
 if [ -z $BUSYBOX_DIR ]; then
 	BUSYBOX_DIR=busybox-$BUSYBOX_VER
@@ -47,7 +48,7 @@ function build_busybox()
 	cd -
 }
 
-function build_initramfs()
+function build_initramfs_old()
 {
 	echo "== Build initramfs =="
 	rm -rf $TOP/$INITRAMFS_DIR
@@ -71,6 +72,14 @@ function build_initramfs()
 	cd $TOP/obj
 	cat initramfs-$ARCH.cpio | gzip > initramfs-$ARCH.gz
 	cd -
+}
+
+function build_initramfs()
+{
+	echo "== Build initramfs =="
+	echo "Use file list as INITRAMFS_SOURCE:"
+	grep INITRAMFS_SOURCE $TOP/config/$LINUX_CONFIG
+	echo "So initramfs is built not here now but together with kernel later"
 }
 
 function build_linux_5_6()
