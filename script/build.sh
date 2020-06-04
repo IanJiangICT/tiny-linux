@@ -12,6 +12,8 @@ BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-min
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initrd
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d05261647
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041530
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041659
+INITRAMFS_FILELIST_TEMPLATE=$ARCH-initramfs-list
 
 if [ -z $BUSYBOX_DIR ]; then
 	BUSYBOX_DIR=busybox-$BUSYBOX_VER
@@ -20,6 +22,7 @@ if [ -z $LINUX_DIR ]; then
 	LINUX_DIR=linux-$LINUX_VER
 fi
 INITRAMFS_DIR=obj/initramfs/$ARCH
+INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
 BBL_DIR=obj/bbl
 
 ARCHIVES_DIR=$TOP/archive
@@ -77,9 +80,36 @@ function build_initramfs_old()
 function build_initramfs()
 {
 	echo "== Build initramfs =="
-	echo "Use file list as INITRAMFS_SOURCE:"
+	rm -rf $TOP/$INITRAMFS_DIR
+	mkdir -pv $TOP/$INITRAMFS_DIR
+	cp -rf $TOP/config/$INITRAMFS_FILELIST_TEMPLATE $TOP/$INITRAMFS_FILELIST
+	cd $TOP/$INITRAMFS_DIR
+	cp -av $TOP/obj/busybox-$ARCH/_install/* .
+	for f in `ls ./bin`
+	do
+		if [ "$f" == "busybox" ]
+		then
+			continue
+		fi
+		grep $f $TOP/$INITRAMFS_FILELIST >> /dev/null
+		if [ $? == 1 ]
+		then
+			echo "slink /bin/$f busybox 777 0 0" >> $TOP/$INITRAMFS_FILELIST
+		fi
+	done
+	for f in `ls ./usr/bin`
+	do
+		grep $f $TOP/$INITRAMFS_FILELIST >> /dev/null
+		if [ $? == 1 ]
+		then
+			echo "slink /usr/bin/$f ../../bin/busybox 777 0 0" >> $TOP/$INITRAMFS_FILELIST
+		fi
+	done
+
+	echo "Use INITRAMFS_SOURCE file list: $INITRAMFS_FILELIST"
 	grep INITRAMFS_SOURCE $TOP/config/$LINUX_CONFIG
 	echo "So initramfs is built not here now but together with kernel later"
+	cd -
 }
 
 function build_linux_5_6()
