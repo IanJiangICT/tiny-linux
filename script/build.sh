@@ -25,7 +25,10 @@ INITRAMFS_DIR=obj/initramfs/$ARCH
 INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
 BBL_DIR=obj/bbl
 
+BENCH_BIN_DIR=obj/bench-$ARCH
+
 ARCHIVES_DIR=$TOP/archive
+
 
 function clean_all()
 {
@@ -106,9 +109,17 @@ function build_initramfs()
 		fi
 	done
 
+	mkdir ./bench
+	cp -rf $TOP/$BENCH_BIN_DIR/* ./bench
+	for f in `ls ./bench`
+	do
+		echo "file /bench/$f ../../$INITRAMFS_DIR/bench/$f 755 0 0" >> $TOP/$INITRAMFS_FILELIST
+	done
+
 	echo "Use INITRAMFS_SOURCE file list: $INITRAMFS_FILELIST"
 	grep INITRAMFS_SOURCE $TOP/config/$LINUX_CONFIG
 	echo "So initramfs is built not here now but together with kernel later"
+	cat $TOP/$INITRAMFS_FILELIST
 	cd -
 }
 

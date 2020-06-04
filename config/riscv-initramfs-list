@@ -7,6 +7,7 @@ dir /sys 755 0 0
 dir /usr 755 0 0
 dir /usr/bin 755 0 0
 dir /usr/sbin 755 0 0
+dir /bench 755 0 0
 nod /dev/ttyS0 644 0 0 c 5 1
 file /bin/busybox ../busybox-riscv/_install/bin/busybox 755 0 0
 slink /bin/sh busybox 777 0 0
