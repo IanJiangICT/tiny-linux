@@ -100,6 +100,14 @@ function build_initramfs()
 			echo "slink /bin/$f busybox 777 0 0" >> $TOP/$INITRAMFS_FILELIST
 		fi
 	done
+	for f in `ls ./sbin`
+	do
+		grep $f $TOP/$INITRAMFS_FILELIST >> /dev/null
+		if [ $? == 1 ]
+		then
+			echo "slink /sbin/$f ../bin/busybox 777 0 0" >> $TOP/$INITRAMFS_FILELIST
+		fi
+	done
 	for f in `ls ./usr/bin`
 	do
 		grep $f $TOP/$INITRAMFS_FILELIST >> /dev/null
