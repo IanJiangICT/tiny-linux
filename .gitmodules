@@ -1,3 +1,6 @@
 [submodule "riscv-pk"]
 	path = riscv-pk
 	url = https://github.com/riscv/riscv-pk
+[submodule "busybox-master"]
+	path = busybox-master
+	url = https://github.com/IanJiangICT/busybox.git
