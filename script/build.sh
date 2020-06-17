@@ -1,11 +1,12 @@
 #!/bin/bash
 
 TOP=`pwd`
+SCRIPT=`(cd \`dirname $0\`; cd ..; pwd)`
 ARCH=riscv
 CROSS_COMPILE=riscv64-unknown-linux-gnu-
 
 BUSYBOX_VER=1.31.1
-LINUX_VER=5.6.14
+LINUX_VER=5.8.1
 
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-initrd
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-min
@@ -13,6 +14,7 @@ LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initrd
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d05261647
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041530
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041659
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-a5dc8300d
 INITRAMFS_FILELIST_TEMPLATE=$ARCH-initramfs-list
 
 if [ -z $BUSYBOX_DIR ]; then
@@ -45,7 +47,7 @@ function build_busybox()
 	rm -rf $TOP/obj/busybox-$ARCH
 	cd $TOP/$BUSYBOX_DIR
 	mkdir -pv $TOP/obj/busybox-$ARCH
-	cp $TOP/config/$BUSYBOX_CONFIG ./.config
+	cp $SCRIPT/config/$BUSYBOX_CONFIG ./.config
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/busybox-$ARCH oldconfig
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE mrproper
 	cd $TOP/obj/busybox-$ARCH
@@ -85,47 +87,60 @@ function build_initramfs()
 	echo "== Build initramfs =="
 	rm -rf $TOP/$INITRAMFS_DIR
 	mkdir -pv $TOP/$INITRAMFS_DIR
-	cp -rf $TOP/config/$INITRAMFS_FILELIST_TEMPLATE $TOP/$INITRAMFS_FILELIST
+	cp -rf $SCRIPT/config/$INITRAMFS_FILELIST_TEMPLATE $TOP/$INITRAMFS_FILELIST
+	cp -rf $SCRIPT/config/riscv-initramfs-init $TOP/obj/riscv-initramfs-init
 	cd $TOP/$INITRAMFS_DIR
 	cp -av $TOP/obj/busybox-$ARCH/_install/* .
-	for f in `ls ./bin`
-	do
-		if [ "$f" == "busybox" ]
-		then
-			continue
-		fi
-		grep $f $TOP/$INITRAMFS_FILELIST >> /dev/null
-		if [ $? == 1 ]
-		then
-			echo "slink /bin/$f busybox 777 0 0" >> $TOP/$INITRAMFS_FILELIST
-		fi
-	done
-	for f in `ls ./sbin`
-	do
-		grep $f $TOP/$INITRAMFS_FILELIST >> /dev/null
-		if [ $? == 1 ]
-		then
-			echo "slink /sbin/$f ../bin/busybox 777 0 0" >> $TOP/$INITRAMFS_FILELIST
-		fi
-	done
-	for f in `ls ./usr/bin`
-	do
-		grep $f $TOP/$INITRAMFS_FILELIST >> /dev/null
-		if [ $? == 1 ]
-		then
-			echo "slink /usr/bin/$f ../../bin/busybox 777 0 0" >> $TOP/$INITRAMFS_FILELIST
-		fi
-	done
+	if [ -x ./bin ]
+	then
+		for f in `ls ./bin`
+		do
+			if [ "$f" == "busybox" ]
+			then
+				continue
+			fi
+			grep $f $TOP/$INITRAMFS_FILELIST >> /dev/null
+			if [ $? == 1 ]
+			then
+				echo "slink /bin/$f busybox 777 0 0" >> $TOP/$INITRAMFS_FILELIST
+			fi
+		done
+	fi
+	if [ -x ./sbin ]
+	then
+		for f in `ls ./sbin`
+		do
+			grep $f $TOP/$INITRAMFS_FILELIST >> /dev/null
+			if [ $? == 1 ]
+			then
+				echo "slink /sbin/$f ../bin/busybox 777 0 0" >> $TOP/$INITRAMFS_FILELIST
+			fi
+		done
+	fi
+	if [ -x ./usr/sbin ]
+	then
+		for f in `ls ./usr/bin`
+		do
+			grep $f $TOP/$INITRAMFS_FILELIST >> /dev/null
+			if [ $? == 1 ]
+			then
+				echo "slink /usr/bin/$f ../../bin/busybox 777 0 0" >> $TOP/$INITRAMFS_FILELIST
+			fi
+		done
+	fi
 
 	mkdir ./bench
-	cp -rf $TOP/$BENCH_BIN_DIR/* ./bench
-	for f in `ls ./bench`
-	do
-		echo "file /bench/$f ../../$INITRAMFS_DIR/bench/$f 755 0 0" >> $TOP/$INITRAMFS_FILELIST
-	done
+	if [ -x $TOP/$BENCH_BIN_DIR ]
+	then
+		cp -rf $TOP/$BENCH_BIN_DIR/* ./bench
+		for f in `ls ./bench`
+		do
+			echo "file /bench/$f ../../$INITRAMFS_DIR/bench/$f 755 0 0" >> $TOP/$INITRAMFS_FILELIST
+		done
+	fi
 
 	echo "Use INITRAMFS_SOURCE file list: $INITRAMFS_FILELIST"
-	grep INITRAMFS_SOURCE $TOP/config/$LINUX_CONFIG
+	grep INITRAMFS_SOURCE $SCRIPT/config/$LINUX_CONFIG
 	echo "So initramfs is built not here now but together with kernel later"
 	cat $TOP/$INITRAMFS_FILELIST
 	cd -
@@ -138,7 +153,7 @@ function build_linux_5_6()
 	#mkdir -p $TOP/obj/linux-$ARCH
 	cd $TOP/$LINUX_DIR
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE distclean
-	cp $TOP/config/$LINUX_CONFIG arch/$ARCH/configs/my_defconfig
+	cp $SCRIPT/config/$LINUX_CONFIG arch/$ARCH/configs/my_defconfig
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH my_defconfig
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH -j6
 	if [ ! -f $TOP/obj/linux-$ARCH/vmlinux ]
@@ -161,7 +176,7 @@ function build_bbl()
 	rm -rf $TOP/$BBL_DIR
 	mkdir -pv $TOP/$BBL_DIR
 	cd $TOP/$BBL_DIR
-	$TOP/riscv-pk/configure  --enable-logo --host=riscv64-unknown-linux-gnu --with-payload=$TOP/obj/linux-$ARCH/vmlinux
+	$SCRIPT/riscv-pk/configure  --enable-logo --host=riscv64-unknown-linux-gnu --with-payload=$TOP/obj/linux-$ARCH/vmlinux
 	make
 	cd -
 }
@@ -169,19 +184,19 @@ function build_bbl()
 cd $TOP
 
 echo "== Prepare =="
-if [ ! -f $TOP/config/$LINUX_CONFIG ]
+if [ ! -f $SCRIPT/config/$LINUX_CONFIG ]
 then
 	echo "Linux config not found $LINUX_CONFIG"
 	exit 1
 fi
 
-if [ ! -f $TOP/config/$BUSYBOX_CONFIG ]
+if [ ! -f $SCRIPT/config/$BUSYBOX_CONFIG ]
 then
 	echo "Busybox config not found $BUSYBOX_CONFIG"
 	exit 1
 fi
 
-if [ ! -f $TOP/riscv-pk/README.md ]
+if [ ! -f $SCRIPT/riscv-pk/README.md ]
 then
 	echo "Submodule riscv-pk not checkeck out"
 	exit 1

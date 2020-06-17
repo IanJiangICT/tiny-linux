@@ -17,4 +17,4 @@ slink /bin/ls busybox 777 0 0
 slink /bin/mount busybox 777 0 0
 slink /usr/bin/cut ../../bin/busybox 777 0 0
 slink /usr/bin/setsid ../../bin/busybox 777 0 0
-file /init ../../config/riscv-initramfs-init 755 0 0
+file /init ../riscv-initramfs-init 755 0 0
