@@ -23,6 +23,17 @@ fi
 if [ -z $LINUX_DIR ]; then
 	LINUX_DIR=linux-$LINUX_VER
 fi
+if [ -z $BBL ]; then
+	BBL=riscv-pk
+fi
+if [ "x$BBL" = "xsdfirm" ]; then
+	if [ -z $SDFIRM_DIR ]; then
+		SDFIRM_DIR=sdfirm
+	fi
+	if [ -z $MACH ]; then
+		MACH=spike64
+	fi
+fi
 INITRAMFS_DIR=obj/initramfs/$ARCH
 INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
 BBL_DIR=obj/bbl
@@ -48,7 +59,7 @@ function build_busybox()
 	cd $TOP/$BUSYBOX_DIR
 	mkdir -pv $TOP/obj/busybox-$ARCH
 	cp $SCRIPT/config/$BUSYBOX_CONFIG ./.config
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/busybox-$ARCH oldconfig
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/busybox-$ARCH/ oldconfig
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE mrproper
 	cd $TOP/obj/busybox-$ARCH
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE -j6
@@ -154,8 +165,8 @@ function build_linux_5_6()
 	cd $TOP/$LINUX_DIR
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE distclean
 	cp $SCRIPT/config/$LINUX_CONFIG arch/$ARCH/configs/my_defconfig
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH my_defconfig
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH -j6
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH/ my_defconfig
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH/ -j6
 	if [ ! -f $TOP/obj/linux-$ARCH/vmlinux ]
 	then
 		echo "Error: Failed to build Linux"
@@ -170,15 +181,49 @@ function build_linux()
 	build_linux_5_6
 }
 
-function build_bbl()
+function build_sdfirm()
 {
-	echo "== Build bbl =="
+	echo "== Build sdfirm =="
+	rm -rf $TOP/obj/sdfirm-$ARCH
+	mkdir -p $TOP/obj/sdfirm-$ARCH
+	cd $TOP/$SDFIRM_DIR
+	if [ -x $TOP/obj/sdfirm-$ARCH ]; then
+		make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/sdfirm-$ARCH/ distclean
+	fi
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE distclean
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/sdfirm-$ARCH/ ${MACH}_bbl_defconfig
+	ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPLE $SDFIRM_DIR/scripts/config \
+		--file $TOP/obj/sdfirm-$ARCH/.config \
+		--set-str CONFIG_SBI_PAYLOAD_PATH ../linux-$ARCH/arch/$ARCH/boot/Image
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/sdfirm-$ARCH/ -j6
+	if [ ! -f $TOP/obj/sdfirm-$ARCH/sdfirm ]
+	then
+		echo "Error: Failed to build sdfirm"
+		exit 1
+	fi
+	${CROSS_COMPILE}objcopy --only-keep-debug $TOP/obj/sdfirm-$ARCH/sdfirm $TOP/obj/sdfirm-$ARCH/sdfirm.sym
+	cd -
+}
+
+function build_riscv-pk()
+{
+	echo "== Build riscv-pk =="
 	rm -rf $TOP/$BBL_DIR
 	mkdir -pv $TOP/$BBL_DIR
 	cd $TOP/$BBL_DIR
 	$SCRIPT/riscv-pk/configure  --enable-logo --host=riscv64-unknown-linux-gnu --with-payload=$TOP/obj/linux-$ARCH/vmlinux
 	make
 	cd -
+}
+
+function build_bbl()
+{
+	if [ "x$BBL" = "xriscv-pk" ]; then
+		build_riscv-pk
+	fi
+	if [ "x$BBL" = "xsdfirm" ]; then
+		build_sdfirm
+	fi
 }
 
 cd $TOP
