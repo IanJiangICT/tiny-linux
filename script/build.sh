@@ -17,6 +17,8 @@ LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041530
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041659
 #LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-a5dc8300d
 INITRAMFS_FILELIST_TEMPLATE=$ARCH-initramfs-list
+INITRAMFS_INIT=$ARCH-initramfs-init
+#INITRAMFS_INIT=$ARCH-initramfs-init-bench
 
 if [ -z $BUSYBOX_DIR ]; then
 	BUSYBOX_DIR=busybox-$BUSYBOX_VER
@@ -100,7 +102,7 @@ function build_initramfs()
 	rm -rf $TOP/$INITRAMFS_DIR
 	mkdir -pv $TOP/$INITRAMFS_DIR
 	cp -rf $SCRIPT/config/$INITRAMFS_FILELIST_TEMPLATE $TOP/$INITRAMFS_FILELIST
-	cp -rf $SCRIPT/config/riscv-initramfs-init $TOP/obj/riscv-initramfs-init
+	cp -rf $SCRIPT/config/$INITRAMFS_INIT $TOP/obj/riscv-initramfs-init
 	cp -rf $SCRIPT/bench/bench-auto.sh $TOP/obj/bench-auto.sh
 	cd $TOP/$INITRAMFS_DIR
 	cp -av $TOP/obj/busybox-$ARCH/_install/* .
