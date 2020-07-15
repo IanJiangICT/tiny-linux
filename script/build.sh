@@ -6,15 +6,16 @@ ARCH=riscv
 CROSS_COMPILE=riscv64-unknown-linux-gnu-
 
 BUSYBOX_VER=1.31.1
-LINUX_VER=5.8.1
+LINUX_VER=5.6.14
 
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-initrd
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-min
+BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-bench
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initrd
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d05261647
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041530
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041659
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-a5dc8300d
+#LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-a5dc8300d
 INITRAMFS_FILELIST_TEMPLATE=$ARCH-initramfs-list
 
 if [ -z $BUSYBOX_DIR ]; then
@@ -100,6 +101,7 @@ function build_initramfs()
 	mkdir -pv $TOP/$INITRAMFS_DIR
 	cp -rf $SCRIPT/config/$INITRAMFS_FILELIST_TEMPLATE $TOP/$INITRAMFS_FILELIST
 	cp -rf $SCRIPT/config/riscv-initramfs-init $TOP/obj/riscv-initramfs-init
+	cp -rf $SCRIPT/bench/bench-auto.sh $TOP/obj/bench-auto.sh
 	cd $TOP/$INITRAMFS_DIR
 	cp -av $TOP/obj/busybox-$ARCH/_install/* .
 	if [ -x ./bin ]
@@ -276,6 +278,22 @@ then
 	elif [ "$1" == "bbl" ]
 	then
 		build_bbl
+	fi
+elif [ $# -eq 2 ]
+then
+	if [ "$1" == "bench" ]
+	then
+		bench=$2
+		rm -rf $TOP/$BENCH_BIN_DIR/*
+		cp $bench $TOP/$BENCH_BIN_DIR/
+		build_initramfs
+		build_linux
+		build_bbl
+		bench_name=`ls $TOP/$BENCH_BIN_DIR/ | sed -E 's/.tar//'`
+		bbl_file=$TOP/$BBL_DIR/bbl-$bench_name-$ARCH.elf
+		echo "Result BBL with $bench"
+		mv $TOP/$BBL_DIR/bbl $bbl_file
+		ls -l $bbl_file
 	fi
 else
 		clean_all
