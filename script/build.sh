@@ -20,6 +20,8 @@ INITRAMFS_FILELIST_TEMPLATE=$ARCH-initramfs-list
 INITRAMFS_INIT=$ARCH-initramfs-init
 #INITRAMFS_INIT=$ARCH-initramfs-init-bench
 
+BBL_DTS=dts-riscv-spike
+
 if [ -z $BUSYBOX_DIR ]; then
 	BUSYBOX_DIR=busybox-$BUSYBOX_VER
 fi
@@ -215,7 +217,10 @@ function build_riscv-pk()
 	rm -rf $TOP/$BBL_DIR
 	mkdir -pv $TOP/$BBL_DIR
 	cd $TOP/$BBL_DIR
-	$SCRIPT/riscv-pk/configure  --enable-logo --host=riscv64-unknown-linux-gnu --with-payload=$TOP/obj/linux-$ARCH/vmlinux
+	dtc -I dts $SCRIPT/config/$BBL_DTS -o $TOP/$BBL_DIR/$BBL_DTS.bin
+	$SCRIPT/riscv-pk/configure  --enable-logo --host=riscv64-unknown-linux-gnu \
+		--with-fdt=$TOP/$BBL_DIR/$BBL_DTS.bin \
+		--with-payload=$TOP/obj/linux-$ARCH/vmlinux
 	make
 	cd -
 }
