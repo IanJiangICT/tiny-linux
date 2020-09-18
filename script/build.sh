@@ -7,6 +7,7 @@ CROSS_COMPILE=riscv64-unknown-linux-gnu-
 
 BUSYBOX_VER=1.31.1
 LINUX_VER=5.6.14
+LINUX_VER=5.8.10
 
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-initrd
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-min
@@ -15,6 +16,7 @@ LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initrd
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d05261647
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041530
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041659
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d09210936
 #LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-a5dc8300d
 INITRAMFS_FILELIST_TEMPLATE=$ARCH-initramfs-list
 INITRAMFS_INIT=$ARCH-initramfs-init
