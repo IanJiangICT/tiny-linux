@@ -1,0 +1,22 @@
+dir /bin 755 0 0
+dir /sbin 755 0 0
+dir /dev 755 0 0
+dir /etc 755 0 0
+dir /proc 755 0 0
+dir /sys 755 0 0
+dir /usr 755 0 0
+dir /usr/bin 755 0 0
+dir /usr/sbin 755 0 0
+dir /bench 755 0 0
+nod /dev/ttyS0 644 0 0 c 5 1
+nod /dev/console 644 0 0 c 5 1
+file /bin/busybox ../busybox-arm/_install/bin/busybox 755 0 0
+slink /bin/sh busybox 777 0 0
+slink /bin/cat busybox 777 0 0
+slink /bin/echo busybox 777 0 0
+slink /bin/ls busybox 777 0 0
+slink /bin/mount busybox 777 0 0
+slink /usr/bin/cut ../../bin/busybox 777 0 0
+slink /usr/bin/setsid ../../bin/busybox 777 0 0
+file /init ../arm-initramfs-init 755 0 0
+file /bench/bench-auto.sh ../bench-auto.sh 755 0 0
