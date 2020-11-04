@@ -3,26 +3,23 @@
 TOP=`pwd`
 SCRIPT=`(cd \`dirname $0\`; cd ..; pwd)`
 ARCH=arm
-CROSS_COMPILE=riscv64-unknown-linux-gnu-
+CROSS_COMPILE=arm-linux-gnueabi-
 
 BUSYBOX_VER=1.31.1
-LINUX_VER=5.6.14
 LINUX_VER=5.8.10
 
-BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-initrd
-BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-min
-BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-bench
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initrd
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d05261647
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041530
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041659
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d09210936
-#LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-a5dc8300d
+UIMAGE_LOADADDR=0x60003000
+
+BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-test
+# Linux kernel configs based on vexpress_defconfig
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d10221549
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d10260909
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d10271344
 INITRAMFS_FILELIST_TEMPLATE=$ARCH-initramfs-list
 INITRAMFS_INIT=$ARCH-initramfs-init
-#INITRAMFS_INIT=$ARCH-initramfs-init-bench
 
-BBL_DTS=dts-riscv-spike
+UBOOT_CONFIG=qemu_arm_defconfig
+UBOOT_CONFIG=highbank_defconfig
 
 if [ -z $BUSYBOX_DIR ]; then
 	BUSYBOX_DIR=busybox-$BUSYBOX_VER
@@ -30,20 +27,11 @@ fi
 if [ -z $LINUX_DIR ]; then
 	LINUX_DIR=linux-$LINUX_VER
 fi
-if [ -z $BBL ]; then
-	BBL=riscv-pk
-fi
-if [ "x$BBL" = "xsdfirm" ]; then
-	if [ -z $SDFIRM_DIR ]; then
-		SDFIRM_DIR=sdfirm
-	fi
-	if [ -z $MACH ]; then
-		MACH=spike64
-	fi
-fi
+
+UBOOT_DIR=u-boot
+
 INITRAMFS_DIR=obj/initramfs/$ARCH
 INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
-BBL_DIR=obj/bbl
 
 BENCH_BIN_DIR=obj/bench-$ARCH
 
@@ -56,7 +44,6 @@ function clean_all()
 	rm -rf $TOP/obj/busybox-$ARCH
 	rm -rf $TOP/$INITRAMFS_DIR
 	rm -rf $TOP/obj/linux-$ARCH
-	rm -rf $TOP/$BBL_DIR
 }
 
 function build_busybox()
@@ -71,6 +58,16 @@ function build_busybox()
 	cd $TOP/obj/busybox-$ARCH
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE -j6
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE install
+	cd -
+}
+
+function build_uboot()
+{
+	echo "== Build U-Boot =="
+	cd $TOP/$UBOOT_DIR
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE clean
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE $UBOOT_CONFIG
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE
 	cd -
 }
 
@@ -106,7 +103,7 @@ function build_initramfs()
 	rm -rf $TOP/$INITRAMFS_DIR
 	mkdir -pv $TOP/$INITRAMFS_DIR
 	cp -rf $SCRIPT/config/$INITRAMFS_FILELIST_TEMPLATE $TOP/$INITRAMFS_FILELIST
-	cp -rf $SCRIPT/config/$INITRAMFS_INIT $TOP/obj/riscv-initramfs-init
+	cp -rf $SCRIPT/config/$INITRAMFS_INIT $TOP/obj/$ARCH-initramfs-init
 	cp -rf $SCRIPT/bench/bench-auto.sh $TOP/obj/bench-auto.sh
 	cd $TOP/$INITRAMFS_DIR
 	cp -av $TOP/obj/busybox-$ARCH/_install/* .
@@ -175,6 +172,7 @@ function build_linux_5_6()
 	cp $SCRIPT/config/$LINUX_CONFIG arch/$ARCH/configs/my_defconfig
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH/ my_defconfig
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH/ -j6
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH/ LOADADDR=$UIMAGE_LOADADDR uImage
 	if [ ! -f $TOP/obj/linux-$ARCH/vmlinux ]
 	then
 		echo "Error: Failed to build Linux"
@@ -189,53 +187,7 @@ function build_linux()
 	build_linux_5_6
 }
 
-function build_sdfirm()
-{
-	echo "== Build sdfirm =="
-	rm -rf $TOP/obj/sdfirm-$ARCH
-	mkdir -p $TOP/obj/sdfirm-$ARCH
-	cd $TOP/$SDFIRM_DIR
-	if [ -x $TOP/obj/sdfirm-$ARCH ]; then
-		make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/sdfirm-$ARCH/ distclean
-	fi
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE distclean
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/sdfirm-$ARCH/ ${MACH}_bbl_defconfig
-	ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPLE $SDFIRM_DIR/scripts/config \
-		--file $TOP/obj/sdfirm-$ARCH/.config \
-		--set-str CONFIG_SBI_PAYLOAD_PATH ../linux-$ARCH/arch/$ARCH/boot/Image
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/sdfirm-$ARCH/ -j6
-	if [ ! -f $TOP/obj/sdfirm-$ARCH/sdfirm ]
-	then
-		echo "Error: Failed to build sdfirm"
-		exit 1
-	fi
-	${CROSS_COMPILE}objcopy --only-keep-debug $TOP/obj/sdfirm-$ARCH/sdfirm $TOP/obj/sdfirm-$ARCH/sdfirm.sym
-	cd -
-}
 
-function build_riscv-pk()
-{
-	echo "== Build riscv-pk =="
-	rm -rf $TOP/$BBL_DIR
-	mkdir -pv $TOP/$BBL_DIR
-	cd $TOP/$BBL_DIR
-	dtc -I dts $SCRIPT/config/$BBL_DTS -o $TOP/$BBL_DIR/$BBL_DTS.bin
-	$SCRIPT/riscv-pk/configure  --enable-logo --host=riscv64-unknown-linux-gnu \
-		--with-fdt=$TOP/$BBL_DIR/$BBL_DTS.bin \
-		--with-payload=$TOP/obj/linux-$ARCH/vmlinux
-	make
-	cd -
-}
-
-function build_bbl()
-{
-	if [ "x$BBL" = "xriscv-pk" ]; then
-		build_riscv-pk
-	fi
-	if [ "x$BBL" = "xsdfirm" ]; then
-		build_sdfirm
-	fi
-}
 
 cd $TOP
 
@@ -249,12 +201,6 @@ fi
 if [ ! -f $SCRIPT/config/$BUSYBOX_CONFIG ]
 then
 	echo "Busybox config not found $BUSYBOX_CONFIG"
-	exit 1
-fi
-
-if [ ! -f $SCRIPT/riscv-pk/README.md ]
-then
-	echo "Submodule riscv-pk not checkeck out"
 	exit 1
 fi
 
@@ -284,30 +230,14 @@ then
 	elif [ "$1" == "linux" ]
 	then
 		build_linux
-	elif [ "$1" == "bbl" ]
+	elif [ "$1" == "uboot" ]
 	then
-		build_bbl
-	fi
-elif [ $# -eq 2 ]
-then
-	if [ "$1" == "bench" ]
-	then
-		bench=$2
-		rm -rf $TOP/$BENCH_BIN_DIR/*
-		cp $bench $TOP/$BENCH_BIN_DIR/
-		build_initramfs
-		build_linux
-		build_bbl
-		bench_name=`ls $TOP/$BENCH_BIN_DIR/ | sed -E 's/.tar//'`
-		bbl_file=$TOP/$BBL_DIR/bbl-$bench_name-$ARCH.elf
-		echo "Result BBL with $bench"
-		mv $TOP/$BBL_DIR/bbl $bbl_file
-		ls -l $bbl_file
+		build_uboot
 	fi
 else
 		clean_all
 		build_busybox
 		build_initramfs
 		build_linux
-		build_bbl
+		build_uboot
 fi
