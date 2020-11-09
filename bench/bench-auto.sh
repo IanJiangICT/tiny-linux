@@ -12,6 +12,7 @@ do
 	chmod a+x ./run.sh
 	sh ./run.sh
 	cd $bench_dir
+	rm -rf $bench_name
 done
 echo "End of run benches"
 echo "Calling poweroff..." 
