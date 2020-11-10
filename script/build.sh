@@ -3,7 +3,8 @@
 TOP=`pwd`
 SCRIPT=`(cd \`dirname $0\`; cd ..; pwd)`
 ARCH=riscv
-CROSS_COMPILE=riscv64-unknown-linux-gnu-
+#CROSS_COMPILE=riscv64-unknown-linux-gnu-
+CROSS_COMPILE=riscv64-linux-gnu-
 
 BUSYBOX_VER=1.31.1
 LINUX_VER=5.6.14
@@ -17,6 +18,7 @@ LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d05261647
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041530
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041659
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d09210936
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d11071544
 #LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-a5dc8300d
 INITRAMFS_FILELIST_TEMPLATE=$ARCH-initramfs-list
 INITRAMFS_INIT=$ARCH-initramfs-init
@@ -220,7 +222,7 @@ function build_riscv-pk()
 	mkdir -pv $TOP/$BBL_DIR
 	cd $TOP/$BBL_DIR
 	dtc -I dts $SCRIPT/config/$BBL_DTS -o $TOP/$BBL_DIR/$BBL_DTS.bin
-	$SCRIPT/riscv-pk/configure  --enable-logo --host=riscv64-unknown-linux-gnu \
+	$SCRIPT/riscv-pk/configure  --enable-logo --host=${CROSS_COMPILE::-1} \
 		--with-fdt=$TOP/$BBL_DIR/$BBL_DTS.bin \
 		--with-payload=$TOP/obj/linux-$ARCH/vmlinux
 	make
