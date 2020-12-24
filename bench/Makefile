@@ -6,6 +6,8 @@ bench+=jpgenc
 bench+=linpackc
 bench+=stream
 bench+=t_time
+bench+=hello_pthread
+bench+=hello_pthread_d
 
 all: ${bench}
 
@@ -28,3 +30,8 @@ stream: stream.c
 t_time: t_time.c
 	${CROSS_COMPILE}gcc -static -o t_time t_time.c
 
+hello_pthread: hello_pthread.c
+	${CROSS_COMPILE}gcc -static -o hello_pthread hello_pthread.c -lpthread
+
+hello_pthread_d: hello_pthread.c
+	${CROSS_COMPILE}gcc -o hello_pthread_d hello_pthread.c -lpthread
