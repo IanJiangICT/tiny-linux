@@ -2,10 +2,7 @@
 
 mount -t proc none /proc
 mount -t sysfs none /sys
-echo -e "\nBoot took $(cut -d' ' -f1 /proc/uptime) seconds\n" >> /dev/ttyS0
+mount -t devtmpfs devtmpfs /dev
+echo -e "\nBoot took $(cut -d' ' -f1 /proc/uptime) seconds\n" >> /dev/console
 
-#ls -l / >> /dev/ttyS0
-#ls -l /dev >> /dev/ttyS0
-#ls -l /bin >> /dev/ttyS0
-
-/bin/busybox sh < /dev/ttyS0 > /dev/ttyS0 2>&1
+/bin/busybox sh < /dev/console > /dev/console 2>&1
