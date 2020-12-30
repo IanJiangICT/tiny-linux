@@ -5,5 +5,5 @@ mount -t sysfs none /sys
 mount -t devtmpfs devtmpfs /dev
 echo -e "\nBoot took $(cut -d' ' -f1 /proc/uptime) seconds\n" >> /dev/console
 
-/bin/busybox sh /bench/bench-auto.sh < /dev/console > /dev/console 2>&1
+/bin/busybox sh /bench/bench-auto.sh /bench 1 < /dev/console > /dev/console 2>&1
 /bin/busybox sh < /dev/console > /dev/console 2>&1

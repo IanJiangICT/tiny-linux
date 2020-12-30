@@ -1,19 +1,29 @@
-bench_dir=/bench
-echo "Start running benches under $bench_dir"
+bench_dir=$1 # Example: /bench
+run_index=$2 # Example: 1
+run_dir=/bench-run-$run_index # Example: /bench-run-1
+
 cd $bench_dir
-for b in `ls *.tar`;
+bench_tar_list=`ls *.tar`
+echo "======================================"
+echo "Start running $run_index of benches under $bench_dir"
+echo "$bench_tar_list"
+echo "======================================"
+mkdir $run_dir
+for b in $bench_tar_list;
 do
-	echo "--------------------------------------"
+	cd $bench_dir
 	bench_name=`echo $b | sed -E 's/\.tar//'`
-	echo "Run bench $bench_name..."
-	tar xf $b
-	cd $bench_name
+	echo "--------------------------------------"
+	echo "Run bench $run_dir/$bench_name..."
+	tar xf $b -C $run_dir
+	cd $run_dir/$bench_name
 	cat ./run.sh
 	chmod a+x ./run.sh
 	sh ./run.sh
-	cd $bench_dir
+	cd $run_dir
 	rm -rf $bench_name
+	echo "End of $run_dir/$bench_name..."
 done
-echo "End of run benches"
-echo "Calling poweroff..." 
-poweroff -f
+echo "End of all"
+#echo "Calling poweroff..." 
+#poweroff -f
