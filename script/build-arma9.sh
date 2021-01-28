@@ -20,6 +20,7 @@ INITRAMFS_INIT=$ARCH-initramfs-init
 
 UBOOT_CONFIG=qemu_arm_defconfig
 UBOOT_CONFIG=highbank_defconfig
+UBOOT_CONFIG=vexpress_ca9x4_defconfig
 
 if [ -z $BUSYBOX_DIR ]; then
 	BUSYBOX_DIR=busybox-$BUSYBOX_VER
@@ -44,6 +45,7 @@ function clean_all()
 	rm -rf $TOP/obj/busybox-$ARCH
 	rm -rf $TOP/$INITRAMFS_DIR
 	rm -rf $TOP/obj/linux-$ARCH
+	rm -rf $TOP/obj/uboot-$ARCH/
 }
 
 function build_busybox()
@@ -64,10 +66,13 @@ function build_busybox()
 function build_uboot()
 {
 	echo "== Build U-Boot =="
+	rm -rf $TOP/obj/uboot-$ARCH/
+	mkdir $TOP/obj/uboot-$ARCH/
 	cd $TOP/$UBOOT_DIR
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE clean
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE $UBOOT_CONFIG
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE
+	cp u-boot $TOP/obj/uboot-$ARCH/
 	cd -
 }
 
