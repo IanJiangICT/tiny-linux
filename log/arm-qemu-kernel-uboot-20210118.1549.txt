@@ -1,0 +1,215 @@
+$ sudo qemu-system-arm -nographic -machine vexpress-a9 -cpu cortex-a9 -smp 4 -m 512M -kernel obj/uboot-arm/u-boot -net nic -net tap,ifname=tap0
+
+
+U-Boot 2021.01-rc2-01380-g822f87c835-dirty (Jan 28 2021 - 15:37:04 +0800)
+
+DRAM:  512 MiB
+WARNING: Caches not enabled
+Flash: ## Unknown flash on Bank 1 - Size = 0x00000000 = 0 MB
+64 MiB
+MMC:   MMC: 0
+*** Warning - bad CRC, using default environment
+
+In:    serial
+Out:   serial
+Err:   serial
+Net:   smc911x-0
+Hit any key to stop autoboot:  0 
+smc911x: MAC 52:54:00:12:34:56
+smc911x: detected LAN9118 controller
+smc911x: phy initialized
+smc911x: MAC 52:54:00:12:34:56
+Using smc911x-0 device
+TFTP from server 192.168.2.25; our IP address is 192.168.2.110
+Filename 'vexpress-v2p-ca9.dtb'.
+Load address: 0x60500000
+Loading: *
+ARP Retry count exceeded; starting again
+smc911x: MAC 52:54:00:12:34:56
+smc911x: MAC 52:54:00:12:34:56
+smc911x: detected LAN9118 controller
+smc911x: phy initialized
+smc911x: MAC 52:54:00:12:34:56
+Using smc911x-0 device
+TFTP from server 192.168.2.25; our IP address is 192.168.2.110
+Filename 'vexpress-v2p-ca9.dtb'.
+Load address: 0x60500000
+Loading: #
+	 1000 Bytes/s
+done
+Bytes transferred = 14143 (373f hex)
+smc911x: MAC 52:54:00:12:34:56
+smc911x: MAC 52:54:00:12:34:56
+smc911x: detected LAN9118 controller
+smc911x: phy initialized
+smc911x: MAC 52:54:00:12:34:56
+Using smc911x-0 device
+TFTP from server 192.168.2.25; our IP address is 192.168.2.110
+Filename 'uImage'.
+Load address: 0x60003000
+Loading: #################################################################
+	 #################################################################
+	 #################################################################
+	 3.6 MiB/s
+done
+Bytes transferred = 2853560 (2b8ab8 hex)
+smc911x: MAC 52:54:00:12:34:56
+## Booting kernel from Legacy Image at 60003000 ...
+   Image Name:   Linux-5.8.10
+   Image Type:   ARM Linux Kernel Image (uncompressed)
+   Data Size:    2853496 Bytes = 2.7 MiB
+   Load Address: 60003000
+   Entry Point:  60003000
+   Verifying Checksum ... OK
+## Flattened Device Tree blob at 60500000
+   Booting using the fdt blob at 0x60500000
+   Loading Kernel Image
+   Loading Device Tree to 7fe6f000, end 7fe7573e ... OK
+
+Starting kernel ...
+
+[    0.000000] Booting Linux on physical CPU 0x3
+[    0.000000] Linux version 5.8.10 (xxx@xxx-ThinkPad-T480) (arm-linux-gnueabi-gcc (Ubuntu 9.3.0-17ubuntu1~20.04) 9.3.0, GNU ld (GNU Binutils for Ubuntu) 2.34) #1 SMP Thu Jan 28 14:52:54 CST 2021
+[    0.000000] CPU: ARMv7 Processor [410fc090] revision 0 (ARMv7), cr=10c5387d
+[    0.000000] CPU: PIPT / VIPT nonaliasing data cache, VIPT nonaliasing instruction cache
+[    0.000000] OF: fdt: Machine model: V2P-CA9
+[    0.000000] OF: fdt: Ignoring memory block 0x80000000 - 0x80000004
+[    0.000000] Memory policy: Data cache writealloc
+[    0.000000] Reserved memory: created DMA memory pool at 0x4c000000, size 8 MiB
+[    0.000000] OF: reserved mem: initialized node vram@4c000000, compatible id shared-dma-pool
+[    0.000000] cma: Reserved 16 MiB at 0x7ec00000
+[    0.000000] Zone ranges:
+[    0.000000]   Normal   [mem 0x0000000060000000-0x000000007fffffff]
+[    0.000000] Movable zone start for each node
+[    0.000000] Early memory node ranges
+[    0.000000]   node   0: [mem 0x0000000060000000-0x000000007fffffff]
+[    0.000000] Initmem setup node 0 [mem 0x0000000060000000-0x000000007fffffff]
+[    0.000000] On node 0 totalpages: 131072
+[    0.000000]   Normal zone: 1024 pages used for memmap
+[    0.000000]   Normal zone: 0 pages reserved
+[    0.000000]   Normal zone: 131072 pages, LIFO batch:31
+[    0.000000] percpu: Embedded 16 pages/cpu s44176 r0 d21360 u65536
+[    0.000000] pcpu-alloc: s44176 r0 d21360 u65536 alloc=16*4096
+[    0.000000] pcpu-alloc: [0] 0 [0] 1 [0] 2 [0] 3 
+[    0.000000] Built 1 zonelists, mobility grouping on.  Total pages: 130048
+[    0.000000] Kernel command line: console=ttyAMA0
+[    0.000000] printk: log_buf_len individual max cpu contribution: 4096 bytes
+[    0.000000] printk: log_buf_len total cpu_extra contributions: 12288 bytes
+[    0.000000] printk: log_buf_len min size: 16384 bytes
+[    0.000000] printk: log_buf_len: 32768 bytes
+[    0.000000] printk: early log buf free: 14464(88%)
+[    0.000000] Dentry cache hash table entries: 65536 (order: 6, 262144 bytes, linear)
+[    0.000000] Inode-cache hash table entries: 32768 (order: 5, 131072 bytes, linear)
+[    0.000000] mem auto-init: stack:off, heap alloc:off, heap free:off
+[    0.000000] Memory: 496512K/524288K available (4096K kernel code, 259K rwdata, 876K rodata, 1024K init, 94K bss, 11392K reserved, 16384K cma-reserved)
+[    0.000000] SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=4, Nodes=1
+[    0.000000] rcu: Hierarchical RCU implementation.
+[    0.000000] rcu: 	RCU event tracing is enabled.
+[    0.000000] rcu: 	RCU restricting CPUs from NR_CPUS=8 to nr_cpu_ids=4.
+[    0.000000] rcu: RCU calculated value of scheduler-enlistment delay is 10 jiffies.
+[    0.000000] rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=4
+[    0.000000] NR_IRQS: 16, nr_irqs: 16, preallocated irqs: 16
+[    0.000000] L2C: platform modifies aux control register: 0x02020000 -> 0x02420000
+[    0.000000] L2C: DT/platform modifies aux control register: 0x02020000 -> 0x02420000
+[    0.000000] L2C-310 enabling early BRESP for Cortex-A9
+[    0.000000] L2C-310 full line of zeros enabled for Cortex-A9
+[    0.000000] L2C-310 dynamic clock gating disabled, standby mode disabled
+[    0.000000] L2C-310 cache controller enabled, 8 ways, 128 kB
+[    0.000000] L2C-310: CACHE_ID 0x410000c8, AUX_CTRL 0x46420001
+[    0.000000] random: get_random_bytes called from start_kernel+0x368/0x514 with crng_init=0
+[    0.000351] sched_clock: 32 bits at 24MHz, resolution 41ns, wraps every 89478484971ns
+[    0.006644] clocksource: arm,sp804: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 1911260446275 ns
+[    0.007844] Failed to initialize '/bus@4000000/motherboard/iofpga@7,00000000/timer@12000': -22
+[    0.008629] smp_twd: clock not found -2
+[    0.012865] Console: colour dummy device 80x30
+[    0.013450] Calibrating local timer... 91.40MHz.
+[    0.067972] Calibrating delay loop... 600.47 BogoMIPS (lpj=3002368)
+[    0.158638] pid_max: default: 32768 minimum: 301
+[    0.159866] Mount-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+[    0.159920] Mountpoint-cache hash table entries: 1024 (order: 0, 4096 bytes, linear)
+[    0.176211] CPU: Testing write buffer coherency: ok
+[    0.177878] CPU0: Spectre v2: using BPIALL workaround
+[    0.189357] CPU0: thread -1, cpu 3, socket 0, mpidr 80000003
+[    0.197172] Setting up static identity map for 0x60100000 - 0x60100060
+[    0.198617] rcu: Hierarchical SRCU implementation.
+[    0.202840] smp: Bringing up secondary CPUs ...
+[    1.174442] CPU1: failed to boot: -38
+[    2.152430] CPU2: failed to boot: -38
+[    3.157927] CPU3: failed to boot: -38
+[    3.162025] smp: Brought up 1 node, 1 CPU
+[    3.162213] SMP: Total of 1 processors activated (600.47 BogoMIPS).
+[    3.162402] CPU: All CPU(s) started in SVC mode.
+[    3.195053] devtmpfs: initialized
+[    3.209494] VFP support v0.3: implementor 41 architecture 3 part 30 variant 9 rev 0
+[    3.227899] clocksource: jiffies: mask: 0xffffffff max_cycles: 0xffffffff, max_idle_ns: 19112604462750000 ns
+[    3.228838] futex hash table entries: 1024 (order: 4, 65536 bytes, linear)
+[    3.256560] DMA: preallocated 256 KiB pool for atomic coherent allocations
+[    3.260286] cpuidle: using governor ladder
+[    3.260493] hw-breakpoint: debug architecture 0x4 unsupported.
+[    3.261407] Serial: AMBA PL011 UART driver
+[    3.315445] DEBUG: device_create devt = 0 0
+[    3.323341] usbcore: registered new interface driver usbfs
+[    3.323703] usbcore: registered new interface driver hub
+[    3.324005] usbcore: registered new device driver usb
+[    3.344269] clocksource: Switched to clocksource arm,sp804
+[    3.533980] hw perfevents: enabled with armv7_cortex_a9 PMU driver, 5 counters available
+[    3.546226] workingset: timestamp_bits=30 max_order=17 bucket_order=0
+[    3.563699] DEBUG: device_create devt = 5 2
+[    3.584157] i2c i2c-0: Added multiplexed i2c bus 2
+[    4.184938] isp1760 4f000000.usb: bus width: 32, oc: digital
+[    4.187011] isp1760 4f000000.usb: NXP ISP1760 USB Host Controller
+[    4.188207] isp1760 4f000000.usb: new USB bus registered, assigned bus number 1
+[    4.190400] isp1760 4f000000.usb: Scratch test failed.
+[    4.190557] isp1760 4f000000.usb: can't setup: -19
+[    4.191114] isp1760 4f000000.usb: USB bus 1 deregistered
+[    4.205907] DEBUG: device_create devt = 252 0
+[    4.224917] ledtrig-cpu: registered to indicate activity on CPUs
+[    4.227963] usbcore: registered new interface driver usbhid
+[    4.228030] usbhid: USB HID core driver
+[    4.229306] oprofile: using arm/armv7-ca9
+[    4.230566] Registering SWP/SWPB emulation handler
+[    4.238492] mmci-pl18x 10005000.mmci: Got CD GPIO
+[    4.238673] mmci-pl18x 10005000.mmci: Got WP GPIO
+[    4.250663] mmci-pl18x 10005000.mmci: mmc0: PL181 manf 41 rev0 at 0x10005000 irq 21,22 (pio)
+[    4.296561] 10009000.uart: ttyAMA0 at MMIO 0x10009000 (irq = 25, base_baud = 0) is a PL011 rev1
+[    4.347863] printk: console [ttyAMA0] enabled
+[    4.351497] 1000a000.uart: ttyAMA1 at MMIO 0x1000a000 (irq = 26, base_baud = 0) is a PL011 rev1
+[    4.353571] 1000b000.uart: ttyAMA2 at MMIO 0x1000b000 (irq = 27, base_baud = 0) is a PL011 rev1
+[    4.357765] 1000c000.uart: ttyAMA3 at MMIO 0x1000c000 (irq = 28, base_baud = 0) is a PL011 rev1
+[    4.376159] rtc-pl031 10017000.rtc: registered as rtc0
+[    4.377978] rtc-pl031 10017000.rtc: setting system clock to 2021-01-28T07:46:12 UTC (1611819972)
+[    4.385364] drm-clcd-pl111 1001f000.clcd: assigned reserved memory node vram@4c000000
+[    4.385967] drm-clcd-pl111 1001f000.clcd: using device-specific reserved memory
+[    4.387111] drm-clcd-pl111 1001f000.clcd: core tile graphics present
+[    4.387528] drm-clcd-pl111 1001f000.clcd: this device will be deactivated
+[    4.387952] drm-clcd-pl111 1001f000.clcd: Versatile Express init failed - -19
+[    4.398010] drm-clcd-pl111 10020000.clcd: DVI muxed to daughterboard 1 (core tile) CLCD
+[    4.404817] input: AT Raw Set 2 keyboard as /devices/platform/bus@4000000/bus@4000000:motherboard/bus@4000000:motherboard:iofpga@7,00000000/10006000.kmi/serio0/input/input0
+[    4.410117] drm-clcd-pl111 10020000.clcd: initializing Versatile Express PL111
+[    4.413223] drm-clcd-pl111 10020000.clcd: found bridge on endpoint 0
+[    4.413712] drm-clcd-pl111 10020000.clcd: Using non-panel bridge
+[    4.416365] [drm] Supports vblank timestamp caching Rev 2 (21.10.2013).
+[    4.432661] [drm] Initialized pl111 1.0.0 20170317 for 10020000.clcd on minor 0
+[    4.641849] DEBUG: device_create devt = 29 0
+[    4.789298] Console: switching to colour frame buffer device 128x48
+[    4.805614] drm-clcd-pl111 10020000.clcd: fb0: pl111drmfb frame buffer device
+[    4.859137] Freeing unused kernel memory: 1024K
+[    4.902501] Run /init as init process
+[    4.902752]   with arguments:
+[    4.902934]     /init
+[    4.903103]   with environment:
+[    4.903291]     HOME=/
+[    4.903429]     TERM=linux
+[    5.151490] input: ImExPS/2 Generic Explorer Mouse as /devices/platform/bus@4000000/bus@4000000:motherboard/bus@4000000:motherboard:iofpga@7,00000000/10007000.kmi/serio1/input/input2
+
+Boot took 5.34 seconds
+
+
+
+BusyBox v1.31.1 (2021-01-28 14:51:59 CST) built-in shell (ash)
+
+# [    7.390903] random: fast init done
+
+# 
+
+
