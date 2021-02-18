@@ -26,6 +26,8 @@ INITRAMFS_INIT=$ARCH-initramfs-init
 
 BBL_DTS=dts-riscv-spike
 
+UBOOT_CONFIG=qemu-riscv64_smode_defconfig
+
 if [ -z $BUSYBOX_DIR ]; then
 	BUSYBOX_DIR=busybox-$BUSYBOX_VER
 fi
@@ -43,6 +45,9 @@ if [ "x$BBL" = "xsdfirm" ]; then
 		MACH=spike64
 	fi
 fi
+
+UBOOT_DIR=u-boot
+
 INITRAMFS_DIR=obj/initramfs/$ARCH
 INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
 BBL_DIR=obj/bbl
@@ -73,6 +78,19 @@ function build_busybox()
 	cd $TOP/obj/busybox-$ARCH
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE -j6
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE install
+	cd -
+}
+
+function build_uboot()
+{
+	echo "== Build U-Boot =="
+	rm -rf $TOP/obj/uboot-$ARCH/
+	mkdir $TOP/obj/uboot-$ARCH/
+	cd $TOP/$UBOOT_DIR
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE clean
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE $UBOOT_CONFIG
+	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE
+	cp u-boot $TOP/obj/uboot-$ARCH/
 	cd -
 }
 
@@ -289,6 +307,9 @@ then
 	elif [ "$1" == "bbl" ]
 	then
 		build_bbl
+	elif [ "$1" == "uboot" ]
+	then
+		build_uboot
 	fi
 elif [ $# -eq 2 ]
 then
