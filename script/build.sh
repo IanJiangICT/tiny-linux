@@ -138,7 +138,7 @@ function build_initramfs()
 			fi
 		done
 	fi
-	if [ -x ./usr/sbin ]
+	if [ -x ./usr/bin ]
 	then
 		for f in `ls ./usr/bin`
 		do
