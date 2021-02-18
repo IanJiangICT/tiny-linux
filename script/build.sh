@@ -26,7 +26,10 @@ INITRAMFS_INIT=$ARCH-initramfs-init
 
 BBL_DTS=dts-riscv-spike
 
-UBOOT_CONFIG=qemu-riscv64_smode_defconfig
+#UBOOT_CONFIG=qemu-riscv64_smode_defconfig
+UBOOT_CONFIG=qemu-riscv64-linux_defconfig
+UBOOT_DTS=qemu-riscv64-virt
+UIMAGE_ENTRY_ADDR=80400000
 
 if [ -z $BUSYBOX_DIR ]; then
 	BUSYBOX_DIR=busybox-$BUSYBOX_VER
@@ -84,13 +87,21 @@ function build_busybox()
 function build_uboot()
 {
 	echo "== Build U-Boot =="
+	echo "(with built in DTB and Linux uImage as payload)"
 	rm -rf $TOP/obj/uboot-$ARCH/
 	mkdir $TOP/obj/uboot-$ARCH/
 	cd $TOP/$UBOOT_DIR
+	rm -rf payload/payload.bin
+	mkimage -A $ARCH -O linux -T kernel -C none -a $UIMAGE_ENTRY_ADDR -e $UIMAGE_ENTRY_ADDR \
+		-d $TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image \
+		payload/payload.bin
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE clean
+	rm -rf arch/$ARCH/dts/$UBOOT_DTS.dtb
+	dtc -I dts -O dtb arch/$ARCH/dts/$UBOOT_DTS.dts -o arch/$ARCH/dts/$UBOOT_DTS.dtb
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE $UBOOT_CONFIG
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE
-	cp u-boot $TOP/obj/uboot-$ARCH/
+	cp u-boot u-boot.bin $TOP/obj/uboot-$ARCH/
+	cp arch/$ARCH/dts/$UBOOT_DTS.dts arch/$ARCH/dts/$UBOOT_DTS.dtb $TOP/obj/uboot-$ARCH/
 	cd -
 }
 
