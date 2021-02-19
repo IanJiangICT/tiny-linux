@@ -50,6 +50,7 @@ if [ "x$BBL" = "xsdfirm" ]; then
 fi
 
 UBOOT_DIR=u-boot
+OPENSBI_DIR=opensbi
 
 INITRAMFS_DIR=obj/initramfs/$ARCH
 INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
@@ -102,6 +103,18 @@ function build_uboot()
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE
 	cp u-boot u-boot.bin $TOP/obj/uboot-$ARCH/
 	cp arch/$ARCH/dts/$UBOOT_DTS.dts arch/$ARCH/dts/$UBOOT_DTS.dtb $TOP/obj/uboot-$ARCH/
+	cd -
+}
+
+function build_opensbi()
+{
+	echo "== Build OpenSBI =="
+	rm -rf $TOP/obj/opensbi-$ARCH/
+	mkdir $TOP/obj/opensbi-$ARCH/
+	cd $TOP/$OPENSBI_DIR
+	rm -rf build
+	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/uboot-$ARCH/u-boot.bin FW_FDT_PATH=$TOP/obj/uboot-$ARCH/$UBOOT_DTS.dtb
+	cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/
 	cd -
 }
 
@@ -321,6 +334,9 @@ then
 	elif [ "$1" == "uboot" ]
 	then
 		build_uboot
+	elif [ "$1" == "opensbi" ]
+	then
+		build_opensbi
 	fi
 elif [ $# -eq 2 ]
 then
