@@ -17,6 +17,12 @@ Download tarballs for Linux kernel and busybox. Then extract.
 tiny-linux$ tar xf archive/linux-5.6.14.tar
 tiny-linux$ tar jxf archive/busybox-1.31.1.tar.bz2 
 ```
+Apply pathes if any. For exmaple:
+
+```bash
+tiny-linux$ cd busybox-1.31.1
+busybox-1.31.1$ patch -p 1 -i ../patch/busybox-1.31.1-patch-stime
+```
 
 Set PATH for cross-compile tool and QEMU. For example:
 
