@@ -51,8 +51,7 @@ if [ "x$BBL" = "xsdfirm" ]; then
 fi
 
 OPENSBI_DIR=opensbi
-OPENSBI_DTS=dts-qemu-riscv64-spike
-OPENSBI_DTS=dts-qemu-riscv64-virt
+OPENSBI_DTS_LIST="qemu-riscv64-virt qemu-riscv64-spike"
 
 INITRAMFS_DIR=obj/initramfs/$ARCH
 INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
@@ -115,38 +114,40 @@ function build_opensbi()
 	mkdir $TOP/obj/opensbi-$ARCH/
 	cd $TOP/$OPENSBI_DIR
 
-	dtc -I dts -O dtb $SCRIPT/config/$OPENSBI_DTS -o $TOP/obj/opensbi-$ARCH/$OPENSBI_DTS.dtb
-	cp $SCRIPT/config/$OPENSBI_DTS $TOP/obj/opensbi-$ARCH/$OPENSBI_DTS.dts
+	for dts in $OPENSBI_DTS_LIST; do
+		echo "Build OpenSBI with FDT $dts"
+		dtc -I dts -O dtb $SCRIPT/config/dts-$dts -o $TOP/obj/opensbi-$ARCH/$dts.dtb
+		cp $SCRIPT/config/dts-$dts $TOP/obj/opensbi-$ARCH/$dts.dts
+		rm -rf build
+		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/${dts}_jump.elf
+		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/${dts}_jump.bin
+		rm -rf build
+		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/${dts}_linux.elf
+		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/${dts}_linux.bin
+		rm -rf build
+		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/uboot-$ARCH/u-boot.bin FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/${dts}_uboot.elf
+		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/${dts}_uboot.bin
+		ls -l $TOP/obj/opensbi-$ARCH/${dts}_*.*
+	done
 
-	echo "Build OpenSBI with U-Boot as payload"
+	echo "Build OpenSBI without FDT"
 	rm -rf build
-	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/uboot-$ARCH/u-boot.bin FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$OPENSBI_DTS.dtb
-	cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/opensbi_fdt_uboot.elf
-	cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/opensbi_fdt_uboot.bin
+	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE > /dev/null
+	cp build/platform/generic/firmware/fw_jump.elf $TOP/obj/opensbi-$ARCH/null_jump.elf
+	cp build/platform/generic/firmware/fw_jump.bin $TOP/obj/opensbi-$ARCH/null_jump.bin
 	rm -rf build
-	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/uboot-$ARCH/u-boot.bin
-	cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/opensbi_uboot.elf
-	cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/opensbi_uboot.bin
+	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image > /dev/null
+	cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/null_linux.elf
+	cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/null_linux.bin
+	rm -rf build
+	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/uboot-$ARCH/u-boot.bin > /dev/null
+	cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/null_uboot.elf
+	cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/null_uboot.bin
+	ls -l $TOP/obj/opensbi-$ARCH/null_*.*
 
-	echo "Build OpenSBI with Linux as payload"
-	rm -rf build
-	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$OPENSBI_DTS.dtb
-	cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/opensbi_fdt_linux.elf
-	cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/opensbi_fdt_linux.bin
-	rm -rf build
-	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image
-	cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/opensbi_linux.elf
-	cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/opensbi_linux.bin
-
-	echo "Build OpenSBI without payload"
-	rm -rf build
-	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$OPENSBI_DTS.dtb
-	cp build/platform/generic/firmware/fw_jump.elf $TOP/obj/opensbi-$ARCH/opensbi_fdt_jump.elf
-	cp build/platform/generic/firmware/fw_jump.bin $TOP/obj/opensbi-$ARCH/opensbi_fdt_jump.bin
-	rm -rf build
-	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE
-	cp build/platform/generic/firmware/fw_jump.elf $TOP/obj/opensbi-$ARCH/opensbi_jump.elf
-	cp build/platform/generic/firmware/fw_jump.bin $TOP/obj/opensbi-$ARCH/opensbi_jump.bin
 	cd -
 }
 
