@@ -9,6 +9,7 @@ CROSS_COMPILE=riscv64-linux-gnu-
 BUSYBOX_VER=1.31.1
 LINUX_VER=5.6.14
 LINUX_VER=5.8.10
+LINUX_VER=5.11.1
 
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-initrd
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-min
@@ -19,6 +20,7 @@ LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041530
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041659
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d09210936
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d11071544
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d02241200
 #LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-a5dc8300d
 INITRAMFS_FILELIST_TEMPLATE=$ARCH-initramfs-list
 INITRAMFS_INIT=$ARCH-initramfs-init
@@ -30,7 +32,13 @@ UBOOT_DIR=u-boot
 #UBOOT_CONFIG=qemu-riscv64_smode_defconfig
 UBOOT_CONFIG=qemu-riscv64-linux_defconfig
 UBOOT_DTS=qemu-riscv64-virt
+
 UIMAGE_ENTRY_ADDR=80400000
+OPENSBI_FW_TEXT_START=0x80000000
+
+UIMAGE_ENTRY_ADDR=400000
+OPENSBI_FW_TEXT_START=0x200000
+
 
 if [ -z $BUSYBOX_DIR ]; then
 	BUSYBOX_DIR=busybox-$BUSYBOX_VER
@@ -69,6 +77,9 @@ function clean_all()
 	rm -rf $TOP/$INITRAMFS_DIR
 	rm -rf $TOP/obj/linux-$ARCH
 	rm -rf $TOP/$BBL_DIR
+	rm -rf $TOP/obj/uboot-$ARCH
+	rm -rf $TOP/obj/opensbi-$ARCH
+	rm -rf $TOP/$OPENSBI_DIR/build
 }
 
 function build_busybox()
@@ -119,15 +130,15 @@ function build_opensbi()
 		dtc -I dts -O dtb $SCRIPT/config/dts-$dts -o $TOP/obj/opensbi-$ARCH/$dts.dtb
 		cp $SCRIPT/config/dts-$dts $TOP/obj/opensbi-$ARCH/$dts.dts
 		rm -rf build
-		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
 		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/${dts}_jump.elf
 		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/${dts}_jump.bin
 		rm -rf build
-		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
 		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/${dts}_linux.elf
 		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/${dts}_linux.bin
 		rm -rf build
-		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/uboot-$ARCH/u-boot.bin FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/uboot-$ARCH/u-boot.bin FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
 		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/${dts}_uboot.elf
 		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/${dts}_uboot.bin
 		ls -l $TOP/obj/opensbi-$ARCH/${dts}_*.*
@@ -135,15 +146,15 @@ function build_opensbi()
 
 	echo "Build OpenSBI without FDT"
 	rm -rf build
-	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE > /dev/null
+	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START > /dev/null
 	cp build/platform/generic/firmware/fw_jump.elf $TOP/obj/opensbi-$ARCH/null_jump.elf
 	cp build/platform/generic/firmware/fw_jump.bin $TOP/obj/opensbi-$ARCH/null_jump.bin
 	rm -rf build
-	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image > /dev/null
+	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image > /dev/null
 	cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/null_linux.elf
 	cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/null_linux.bin
 	rm -rf build
-	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/uboot-$ARCH/u-boot.bin > /dev/null
+	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/uboot-$ARCH/u-boot.bin > /dev/null
 	cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/null_uboot.elf
 	cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/null_uboot.bin
 	ls -l $TOP/obj/opensbi-$ARCH/null_*.*
