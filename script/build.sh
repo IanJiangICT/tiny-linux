@@ -33,11 +33,15 @@ UBOOT_DIR=u-boot
 UBOOT_CONFIG=qemu-riscv64-linux_defconfig
 UBOOT_DTS=qemu-riscv64-virt
 
+# For machines QEMU virt and spike, Spike
 UIMAGE_ENTRY_ADDR=80400000
 OPENSBI_FW_TEXT_START=0x80000000
+OPENSBI_FW_JUMP_ADDR=0x80200000
 
+# For other machines
 UIMAGE_ENTRY_ADDR=400000
 OPENSBI_FW_TEXT_START=0x200000
+OPENSBI_FW_JUMP_ADDR=0x400000
 
 
 if [ -z $BUSYBOX_DIR ]; then
@@ -60,7 +64,6 @@ fi
 
 OPENSBI_DIR=opensbi
 OPENSBI_DTS_LIST="qemu-riscv64-virt qemu-riscv64-spike"
-
 INITRAMFS_DIR=obj/initramfs/$ARCH
 INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
 BBL_DIR=obj/bbl
@@ -130,9 +133,12 @@ function build_opensbi()
 		dtc -I dts -O dtb $SCRIPT/config/dts-$dts -o $TOP/obj/opensbi-$ARCH/$dts.dtb
 		cp $SCRIPT/config/dts-$dts $TOP/obj/opensbi-$ARCH/$dts.dts
 		rm -rf build
-		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
-		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/${dts}_jump.elf
-		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/${dts}_jump.bin
+		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_JUMP=y \
+			FW_TEXT_START=$OPENSBI_FW_TEXT_START \
+			FW_JUMP_ADDR=$OPENSBI_FW_JUMP_ADDR \
+			FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		cp build/platform/generic/firmware/fw_jump.elf $TOP/obj/opensbi-$ARCH/${dts}_jump.elf
+		cp build/platform/generic/firmware/fw_jump.bin $TOP/obj/opensbi-$ARCH/${dts}_jump.bin
 		rm -rf build
 		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
 		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/${dts}_linux.elf
@@ -146,7 +152,10 @@ function build_opensbi()
 
 	echo "Build OpenSBI without FDT"
 	rm -rf build
-	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START > /dev/null
+	make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_JUMP=y \
+		FW_TEXT_START=$OPENSBI_FW_TEXT_START \
+		FW_JUMP_ADDR=$OPENSBI_FW_JUMP_ADDR \
+		> /dev/null
 	cp build/platform/generic/firmware/fw_jump.elf $TOP/obj/opensbi-$ARCH/null_jump.elf
 	cp build/platform/generic/firmware/fw_jump.bin $TOP/obj/opensbi-$ARCH/null_jump.bin
 	rm -rf build
