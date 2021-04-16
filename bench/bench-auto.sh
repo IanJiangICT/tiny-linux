@@ -13,8 +13,8 @@ for b in $bench_tar_list;
 do
 	cd $bench_dir
 	bench_name=`echo $b | sed -E 's/\.tar//'`
-	echo "--------------------------------------"
-	echo "Run bench $run_dir/$bench_name..."
+	cntx=`./show_context`
+	echo "Run bench $run_dir/$bench_name...($cntx)"
 	tar xf $b -C $run_dir
 	cd $run_dir/$bench_name
 	cat ./run.sh
