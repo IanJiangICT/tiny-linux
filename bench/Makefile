@@ -8,6 +8,9 @@ bench+=stream
 bench+=t_time
 bench+=hello_pthread
 bench+=hello_pthread_d
+bench+=show_context
+
+install_dir=./_install
 
 all: ${bench}
 
@@ -35,3 +38,15 @@ hello_pthread: hello_pthread.c
 
 hello_pthread_d: hello_pthread.c
 	${CROSS_COMPILE}gcc -o hello_pthread_d hello_pthread.c -lpthread
+
+show_context: show_context.c
+	${CROSS_COMPILE}gcc -static -o show_context show_context.c -lpthread
+
+install: ${bench}
+	rm -rf ${install_dir}
+	mkdir ${install_dir}
+	for b in ${bench}; do \
+		mkdir ${install_dir}/$$b; \
+		cp ./$$b ${install_dir}/$$b/; \
+	done
+	
