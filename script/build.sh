@@ -225,6 +225,17 @@ function build_initramfs()
 			fi
 		done
 	fi
+	if [ -x ./usr/sbin ]
+	then
+		for f in `ls ./usr/sbin`
+		do
+			grep $f $TOP/$INITRAMFS_FILELIST >> /dev/null
+			if [ $? == 1 ]
+			then
+				echo "slink /usr/bin/$f ../../bin/busybox 777 0 0" >> $TOP/$INITRAMFS_FILELIST
+			fi
+		done
+	fi
 
 	mkdir ./bench
 	if [ -x $TOP/$BENCH_BIN_DIR ]
