@@ -6,6 +6,7 @@ bench+=jpgenc
 bench+=linpackc
 bench+=stream
 bench+=t_time
+bench+=t_sleep
 bench+=hello_pthread
 bench+=hello_pthread_d
 bench+=show_context
@@ -29,6 +30,9 @@ linpackc: linpackc.c
 
 stream: stream.c
 	${CROSS_COMPILE}gcc -static -O4 -o stream -DSTREAM_ARRAY_SIZE=1000000 stream.c
+
+t_sleep: t_sleep.c
+	${CROSS_COMPILE}gcc -static -o t_sleep t_sleep.c
 
 t_time: t_time.c
 	${CROSS_COMPILE}gcc -static -o t_time t_time.c
