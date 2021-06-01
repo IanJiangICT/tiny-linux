@@ -1,7 +1,7 @@
 #
 # Automatically generated make config: don't edit
 # Busybox version: 1.31.1
-# Tue Dec 29 15:25:01 2020
+# Tue Jun  1 12:35:07 2021
 #
 CONFIG_HAVE_DOT_CONFIG=y
 
@@ -282,7 +282,7 @@ CONFIG_MKDIR=y
 # CONFIG_REALPATH is not set
 CONFIG_RM=y
 # CONFIG_RMDIR is not set
-# CONFIG_SEQ is not set
+CONFIG_SEQ=y
 # CONFIG_SHRED is not set
 # CONFIG_SHUF is not set
 # CONFIG_SLEEP is not set
@@ -324,7 +324,7 @@ CONFIG_UNAME_OSNAME=""
 # CONFIG_BB_ARCH is not set
 # CONFIG_UNIQ is not set
 # CONFIG_UNLINK is not set
-# CONFIG_USLEEP is not set
+CONFIG_USLEEP=y
 # CONFIG_UUDECODE is not set
 # CONFIG_BASE64 is not set
 # CONFIG_UUENCODE is not set
