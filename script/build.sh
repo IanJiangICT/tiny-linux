@@ -116,7 +116,8 @@ function build_opensbi()
 
 	for dts in $OPENSBI_DTS_LIST; do
 		echo "Build OpenSBI with FDT $dts"
-		dtc -I dts -O dtb $SCRIPT/config/dts-$dts -o $TOP/obj/opensbi-$ARCH/$dts.dtb
+		gcc -E -nostdinc -undef -D__DTS__ -x assembler-with-cpp $SCRIPT/config/dts-$dts -o $TOP/obj/opensbi-$ARCH/$dts.dts
+		dtc -I dts -O dtb $TOP/obj/opensbi-$ARCH/$dts.dts -o $TOP/obj/opensbi-$ARCH/$dts.dtb
 		cp $SCRIPT/config/dts-$dts $TOP/obj/opensbi-$ARCH/$dts.dts
 		rm -rf build
 		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
