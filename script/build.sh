@@ -7,19 +7,21 @@ ARCH=riscv
 CROSS_COMPILE=riscv64-linux-gnu-
 
 BUSYBOX_VER=1.31.1
-LINUX_VER=5.6.14
-LINUX_VER=5.8.10
-
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-initrd
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-min
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-bench
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initrd
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d05261647
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041530
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06041659
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d09210936
+
+LINUX_VER=5.8.10
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d11071544
 #LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-a5dc8300d
+
+LINUX_VER=5.13.0
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-dts
+
+LINUX_VER=5.18.1
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06011648
+
 INITRAMFS_FILELIST_TEMPLATE=$ARCH-initramfs-list
 INITRAMFS_INIT=$ARCH-initramfs-init
 #INITRAMFS_INIT=$ARCH-initramfs-init-bench
@@ -41,6 +43,7 @@ fi
 
 OPENSBI_DIR=opensbi
 OPENSBI_DTS_LIST="qemu-riscv64-virt qemu-riscv64-spike"
+OPENSBI_DTS_LIST="spike-spike-p4"
 
 INITRAMFS_DIR=obj/initramfs/$ARCH
 INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
