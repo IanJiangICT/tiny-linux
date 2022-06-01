@@ -4,13 +4,6 @@ Script and configuration for building tiny Linux
 
 1. **Prepare source codes and tools.**
 
-Checkout submodule.
-
-```bash
-tiny-linux$ git submodule init
-tiny-linux$ git submodule update
-```
-
 Download tarballs for Linux kernel and busybox. Then extract.
 
 ```bash

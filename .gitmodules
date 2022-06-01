@@ -1,9 +1,0 @@
-[submodule "riscv-pk"]
-	path = riscv-pk
-	url = https://github.com/IanJiangICT/riscv-pk
-[submodule "busybox-master"]
-	path = busybox-master
-	url = https://github.com/IanJiangICT/busybox.git
-[submodule "opensbi"]
-	path = opensbi
-	url = ./opensbi
