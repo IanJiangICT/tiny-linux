@@ -44,3 +44,16 @@ tiny-linux$ ./script/build.sh
 ```bash
 tiny-linux$ ./script/run-qemu.sh
 ```
+
+4. **Upgrade Linux kernel**
+
+From linux 5.13.0 to 5.18.1 for example:
+```bash
+tiny-linux$ cd linux-5.18.1
+linux-5.18.1$ cp ../config/config-linux-5.13.0-riscv-initramfs-dts ./.config
+linux-5.18.1$ make ARCH=riscv CROSS_COMPILE=riscv64-linux-gnu- oldconfig # Check out each new configuration
+linux-5.18.1$ cp .config ../config/config-linux-5.18.1-riscv-initramfs-d06011648
+linux-5.18.1$ cd -
+tiny-linux$ vim ./script/build.sh # Define new $LINUX_VER and $LINUX_CONFIG
+tiny-linux$ ./script/build.sh linux
+```
