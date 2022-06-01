@@ -38,24 +38,12 @@ fi
 if [ -z $LINUX_DIR ]; then
 	LINUX_DIR=linux-$LINUX_VER
 fi
-if [ -z $BBL ]; then
-	BBL=riscv-pk
-fi
-if [ "x$BBL" = "xsdfirm" ]; then
-	if [ -z $SDFIRM_DIR ]; then
-		SDFIRM_DIR=sdfirm
-	fi
-	if [ -z $MACH ]; then
-		MACH=spike64
-	fi
-fi
 
 OPENSBI_DIR=opensbi
 OPENSBI_DTS_LIST="qemu-riscv64-virt qemu-riscv64-spike"
 
 INITRAMFS_DIR=obj/initramfs/$ARCH
 INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
-BBL_DIR=obj/bbl
 
 BENCH_BIN_DIR=obj/bench-$ARCH
 
@@ -68,7 +56,6 @@ function clean_all()
 	rm -rf $TOP/obj/busybox-$ARCH
 	rm -rf $TOP/$INITRAMFS_DIR
 	rm -rf $TOP/obj/linux-$ARCH
-	rm -rf $TOP/$BBL_DIR
 }
 
 function build_busybox()
@@ -279,54 +266,6 @@ function build_linux()
 	build_linux_5_6
 }
 
-function build_sdfirm()
-{
-	echo "== Build sdfirm =="
-	rm -rf $TOP/obj/sdfirm-$ARCH
-	mkdir -p $TOP/obj/sdfirm-$ARCH
-	cd $TOP/$SDFIRM_DIR
-	if [ -x $TOP/obj/sdfirm-$ARCH ]; then
-		make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/sdfirm-$ARCH/ distclean
-	fi
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE distclean
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/sdfirm-$ARCH/ ${MACH}_bbl_defconfig
-	ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPLE $SDFIRM_DIR/scripts/config \
-		--file $TOP/obj/sdfirm-$ARCH/.config \
-		--set-str CONFIG_SBI_PAYLOAD_PATH ../linux-$ARCH/arch/$ARCH/boot/Image
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/sdfirm-$ARCH/ -j6
-	if [ ! -f $TOP/obj/sdfirm-$ARCH/sdfirm ]
-	then
-		echo "Error: Failed to build sdfirm"
-		exit 1
-	fi
-	${CROSS_COMPILE}objcopy --only-keep-debug $TOP/obj/sdfirm-$ARCH/sdfirm $TOP/obj/sdfirm-$ARCH/sdfirm.sym
-	cd -
-}
-
-function build_riscv-pk()
-{
-	echo "== Build riscv-pk =="
-	rm -rf $TOP/$BBL_DIR
-	mkdir -pv $TOP/$BBL_DIR
-	cd $TOP/$BBL_DIR
-	dtc -I dts $SCRIPT/config/$BBL_DTS -o $TOP/$BBL_DIR/$BBL_DTS.bin
-	$SCRIPT/riscv-pk/configure  --enable-logo --host=${CROSS_COMPILE::-1} \
-		--with-fdt=$TOP/$BBL_DIR/$BBL_DTS.bin \
-		--with-payload=$TOP/obj/linux-$ARCH/vmlinux
-	make
-	cd -
-}
-
-function build_bbl()
-{
-	if [ "x$BBL" = "xriscv-pk" ]; then
-		build_riscv-pk
-	fi
-	if [ "x$BBL" = "xsdfirm" ]; then
-		build_sdfirm
-	fi
-}
-
 cd $TOP
 
 echo "== Prepare =="
@@ -339,12 +278,6 @@ fi
 if [ ! -f $SCRIPT/config/$BUSYBOX_CONFIG ]
 then
 	echo "Busybox config not found $BUSYBOX_CONFIG"
-	exit 1
-fi
-
-if [ ! -f $SCRIPT/riscv-pk/README.md ]
-then
-	echo "Submodule riscv-pk not checkeck out"
 	exit 1
 fi
 
@@ -374,9 +307,6 @@ then
 	elif [ "$1" == "linux" ]
 	then
 		build_linux
-	elif [ "$1" == "bbl" ]
-	then
-		build_bbl
 	elif [ "$1" == "uboot" ]
 	then
 		build_uboot
@@ -393,17 +323,16 @@ then
 		cp $bench $TOP/$BENCH_BIN_DIR/
 		build_initramfs
 		build_linux
-		build_bbl
 		bench_name=`ls $TOP/$BENCH_BIN_DIR/ | sed -E 's/.tar//'`
-		bbl_file=$TOP/$BBL_DIR/bbl-$bench_name-$ARCH.elf
-		echo "Result BBL with $bench"
-		mv $TOP/$BBL_DIR/bbl $bbl_file
-		ls -l $bbl_file
+		bench_file=$TOP/$BENCH_BIN_DIR/linux-$bench_name-$ARCH.elf
+		echo "Result Linux with $bench"
+		mv $TOP/obj/linux-$ARCH/vmlinux $bench_file
+		ls -l $bench_file
 	fi
 else
 		clean_all
 		build_busybox
 		build_initramfs
 		build_linux
-		build_bbl
+		build_opensbi
 fi
