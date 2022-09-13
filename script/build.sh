@@ -44,6 +44,7 @@ fi
 OPENSBI_DIR=opensbi
 OPENSBI_DTS_LIST="qemu-riscv64-virt qemu-riscv64-spike"
 OPENSBI_DTS_LIST="spike-spike-p4"
+OPENSBI_FW_TEXT_START=0x80000000
 
 INITRAMFS_DIR=obj/initramfs/$ARCH
 INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
@@ -97,7 +98,7 @@ function build_uboot()
 	cd -
 }
 
-function build_opensbi()
+function build_opensbi_various()
 {
 	echo "== Build OpenSBI =="
 	rm -rf $TOP/obj/opensbi-$ARCH/
@@ -114,7 +115,7 @@ function build_opensbi()
 		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/${dts}_jump.elf
 		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/${dts}_jump.bin
 		rm -rf build
-		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
 		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/${dts}_linux.elf
 		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/${dts}_linux.bin
 		rm -rf build
@@ -139,6 +140,29 @@ function build_opensbi()
 	cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/null_uboot.bin
 	ls -l $TOP/obj/opensbi-$ARCH/null_*.*
 
+	cd -
+}
+
+function build_opensbi()
+{
+	echo "== Build OpenSBI =="
+	rm -rf $TOP/obj/opensbi-$ARCH/
+	mkdir $TOP/obj/opensbi-$ARCH/
+	cd $TOP/$OPENSBI_DIR
+
+	for dts in $OPENSBI_DTS_LIST; do
+		echo "Build OpenSBI with FDT $dts"
+		gcc -E -nostdinc -undef -D__DTS__ -x assembler-with-cpp $SCRIPT/config/dts-$dts -o $TOP/obj/opensbi-$ARCH/$dts.dts
+		dtc -I dts -O dtb $TOP/obj/opensbi-$ARCH/$dts.dts -o $TOP/obj/opensbi-$ARCH/$dts.dtb
+		cp $SCRIPT/config/dts-$dts $TOP/obj/opensbi-$ARCH/$dts.dts
+		rm -rf build
+		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/opensbi_linux.elf
+		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/opensbi_linux.bin
+		ls -l $TOP/obj/opensbi-$ARCH/opensbi_linux.*
+		echo "Note: Build for only 1 dts $dts"
+		break
+	done
 	cd -
 }
 
@@ -321,16 +345,21 @@ elif [ $# -eq 2 ]
 then
 	if [ "$1" == "bench" ]
 	then
+		if [ ! -x $2 ]
+		then
+			echo "Not found bench file $2"
+			exit 2
+		fi
 		bench=$2
+		echo "Build OpenSBI-Linux with bench $bench"
 		rm -rf $TOP/$BENCH_BIN_DIR/*
 		cp $bench $TOP/$BENCH_BIN_DIR/
 		build_initramfs
 		build_linux
-		bench_name=`ls $TOP/$BENCH_BIN_DIR/ | sed -E 's/.tar//'`
-		bench_file=$TOP/$BENCH_BIN_DIR/linux-$bench_name-$ARCH.elf
-		echo "Result Linux with $bench"
-		mv $TOP/obj/linux-$ARCH/vmlinux $bench_file
-		ls -l $bench_file
+		build_opensbi
+		elf_file=$bench-opensbi_linux-$ARCH.elf
+		mv $TOP/obj/opensbi-$ARCH/opensbi_linux.elf $elf_file
+		ls -l $elf_file
 	fi
 else
 		clean_all
