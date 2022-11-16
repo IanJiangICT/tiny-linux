@@ -42,6 +42,7 @@ if [ -z $LINUX_DIR ]; then
 fi
 
 OPENSBI_DIR=opensbi
+OPENSBI_ISA=rv64g
 OPENSBI_DTS_LIST="qemu-riscv64-virt qemu-riscv64-spike"
 OPENSBI_DTS_LIST="spike-spike-p4"
 OPENSBI_FW_TEXT_START=0x80000000
@@ -156,7 +157,7 @@ function build_opensbi()
 		dtc -I dts -O dtb $TOP/obj/opensbi-$ARCH/$dts.dts -o $TOP/obj/opensbi-$ARCH/$dts.dtb
 		cp $SCRIPT/config/dts-$dts $TOP/obj/opensbi-$ARCH/$dts.dts
 		rm -rf build
-		make PLATFORM=generic CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		make PLATFORM=generic PLATFORM_RISCV_ISA=$OPENSBI_ISA CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
 		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/opensbi_linux.elf
 		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/opensbi_linux.bin
 		ls -l $TOP/obj/opensbi-$ARCH/opensbi_linux.*
