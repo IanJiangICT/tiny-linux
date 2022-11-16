@@ -3,8 +3,17 @@
 mount -t proc none /proc
 mount -t sysfs none /sys
 mount -t devtmpfs devtmpfs /dev
-echo -e "\nBoot took $(cut -d' ' -f1 /proc/uptime) seconds\n" >> /dev/console
 
-#/bin/busybox sh /bench/bench-auto.sh /bench 1 < /dev/console > /dev/console 2>&1
-/bin/busybox sh /bench/bench-auto-mp.sh /bench 4 < /dev/console > /dev/console 2>&1
+#echo -e "Auto memory test\n" >> /dev/console
+#/bin/busybox sh /bench/memtest.sh /bench 1 < /dev/console > /dev/console 2>&1
+
+#echo -e "Auto DMA test\n" >> /dev/console
+#/bin/busybox sh /bench/dmatest.sh /bench 1 < /dev/console > /dev/console 2>&1
+
+#echo -e "Auto Litmus test\n" >> /dev/console
+#/bin/busybox sh /bench/litmus.sh /bench 4 7 < /dev/console > /dev/console 2>&1
+
+#echo -e "Auto TAR benches multi-process\n" >> /dev/console
+#/bin/busybox sh /bench/bench-auto-mp.sh 4 7 < /dev/console > /dev/console 2>&1
+
 /bin/busybox sh < /dev/console > /dev/console 2>&1

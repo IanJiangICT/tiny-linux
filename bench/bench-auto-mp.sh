@@ -14,8 +14,9 @@ while (``)
 do
 	echo "----"
 	date
-	ls -l /bench-auto-*.log
+	ls -l /bench-auto*log
+	tail -n 1 /bench-auto*log
 	usleep 20000
-	usleep 1980000
+	#usleep 1980000
 done
 wait
