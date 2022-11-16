@@ -12,15 +12,11 @@ BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-min
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-bench
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initrd
 
-LINUX_VER=5.8.10
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d11071544
-#LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-a5dc8300d
-
 LINUX_VER=5.13.0
 LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-dts
 
 LINUX_VER=5.18.1
-LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-d06011648
+LINUX_CONFIG=config-linux-$LINUX_VER-$ARCH-initramfs-dts
 
 INITRAMFS_FILELIST_TEMPLATE=$ARCH-initramfs-list
 INITRAMFS_INIT=$ARCH-initramfs-init
