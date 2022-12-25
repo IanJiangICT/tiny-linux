@@ -289,13 +289,21 @@ function build_initramfs()
 function build_linux_5_6()
 {
 	echo "== Build Linux =="
+	if [ -z $LLVM_LINUX ]
+	then
+		echo "- Build Linux with $CROSS_COMPILE"
+		linux_cc=""
+	else
+		echo "- Build Linux with LLVM"
+		linux_cc="CC=clang"
+	fi
 	rm -rf $TOP/obj/linux-$ARCH
 	#mkdir -p $TOP/obj/linux-$ARCH
 	cd $TOP/$LINUX_DIR
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE distclean
 	cp $SCRIPT/config/$LINUX_CONFIG arch/$ARCH/configs/my_defconfig
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH/ my_defconfig
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH/ -j6
+	make ARCH=$ARCH $linux_cc CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH/ my_defconfig
+	make ARCH=$ARCH $linux_cc CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/linux-$ARCH/ -j6
 	if [ ! -f $TOP/obj/linux-$ARCH/vmlinux ]
 	then
 		echo "Error: Failed to build Linux"
