@@ -43,6 +43,11 @@ OPENSBI_DTS_LIST="qemu-riscv64-virt qemu-riscv64-spike"
 OPENSBI_DTS_LIST="spike-spike-p4"
 OPENSBI_FW_TEXT_START=0x80000000
 
+# Customized start address
+OPENSBI_FW_TEXT_START=0x4000400000
+OPENSBI_FW_JUMP_ADDR=0x4000600000
+OPENSBI_DTS_LIST="spike-riscv64-spike-p2m128"
+
 INITRAMFS_DIR=obj/initramfs/$ARCH
 INITRAMFS_FILELIST=obj/initramfs/list-$ARCH
 
