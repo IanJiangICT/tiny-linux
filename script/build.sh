@@ -6,6 +6,10 @@ ARCH=riscv
 #CROSS_COMPILE=riscv64-unknown-linux-gnu-
 CROSS_COMPILE=riscv64-linux-gnu-
 
+#LLVM_BUSYBOX=1
+#LLVM_LINUX=1
+#LLVM_OPENSBI=1
+
 BUSYBOX_VER=1.31.1
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-initrd
 BUSYBOX_CONFIG=config-busybox-$BUSYBOX_VER-$ARCH-min
@@ -153,18 +157,29 @@ function build_opensbi()
 	cd $TOP/$OPENSBI_DIR
 
 	for dts in $OPENSBI_DTS_LIST; do
-		echo "Build OpenSBI with FDT $dts"
+		echo "Build OpenSBI for FDT $dts"
 		gcc -E -nostdinc -undef -D__DTS__ -x assembler-with-cpp $SCRIPT/config/dts-$dts -o $TOP/obj/opensbi-$ARCH/$dts.dts
 		dtc -I dts -O dtb $TOP/obj/opensbi-$ARCH/$dts.dts -o $TOP/obj/opensbi-$ARCH/$dts.dtb
 		cp $SCRIPT/config/dts-$dts $TOP/obj/opensbi-$ARCH/$dts.dts
+		echo "- Build OpenSBI with $CROSS_COMPILE"
 		rm -rf build
-		make PLATFORM=generic PLATFORM_RISCV_ISA=$OPENSBI_ISA CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
-		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/opensbi_linux.elf
-		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/opensbi_linux.bin
-		ls -l $TOP/obj/opensbi-$ARCH/opensbi_linux.*
-		echo "Note: Build for only 1 dts $dts"
-		break
+		make BUILD_INFO=y PLATFORM=generic PLATFORM_RISCV_ISA=$OPENSBI_ISA CROSS_COMPILE=$CROSS_COMPILE FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/opensbi_linux_$dts.elf
+		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/opensbi_linux_$dts.bin
+
+		if [ -z $LLVM_OPENSBI ]
+		then
+			continue
+		fi
+		echo "- Build OpenSBI with LLVM"
+		rm -rf build
+		make BUILD_INFO=y PLATFORM=generic PLATFORM_RISCV_ISA=$OPENSBI_ISA LLVM=1 FW_TEXT_START=$OPENSBI_FW_TEXT_START FW_PAYLOAD_PATH=$TOP/obj/linux-$ARCH/arch/$ARCH/boot/Image FW_FDT_PATH=$TOP/obj/opensbi-$ARCH/$dts.dtb > /dev/null
+		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/opensbi_linux_$dts.llvm.elf
+		cp build/platform/generic/firmware/fw_payload.bin $TOP/obj/opensbi-$ARCH/opensbi_linux_$dts.llvm.bin
+		cp build/platform/generic/firmware/fw_payload.elf $TOP/obj/opensbi-$ARCH/opensbi_linux_$dts.llvm-fix-elftype.elf
+		elfedit --output-type exec $TOP/obj/opensbi-$ARCH/opensbi_linux_$dts.llvm-fix-elftype.elf
 	done
+	ls -l $TOP/obj/opensbi-$ARCH/opensbi_linux*
 	cd -
 }
 
