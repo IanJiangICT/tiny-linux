@@ -6,7 +6,7 @@ echo "Start benches under $bench_dir: $j_start...$j_end"
 for_list=`seq $j_start $j_end`
 for i in $for_list
 do
-	echo "start bench [$i]"
+	echo "start bench job $i"
 	(sh $bench_dir/bench-auto.sh $bench_dir $i > /bench-auto-$i.log &)
 done
 
