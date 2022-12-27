@@ -78,8 +78,16 @@ function build_busybox()
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE O=$TOP/obj/busybox-$ARCH/ oldconfig
 	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE mrproper
 	cd $TOP/obj/busybox-$ARCH
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE -j6
-	make ARCH=$ARCH CROSS_COMPILE=$CROSS_COMPILE install
+	if [ -z $LLVM_BUSYBOX ]
+	then
+		echo "- Build Busybox with $CROSS_COMPILE"
+		busybox_cc="CROSS_COMPILE=$CROSS_COMPILE"
+	else
+		echo "- Build Busybox with LLVM"
+		busybox_cc="CC=clang AR=llvm-ar LD=ld.lld OBJCOPY=llvm-objcopy STRIP=llvm-strip"
+	fi
+	make ARCH=$ARCH $busybox_cc -j6
+	make ARCH=$ARCH $busybox_cc install
 	cd -
 }
 
