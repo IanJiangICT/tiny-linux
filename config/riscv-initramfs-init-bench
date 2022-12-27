@@ -8,7 +8,7 @@ mount -t devtmpfs devtmpfs /dev
 #/bin/busybox sh /bench/memtest.sh /bench 1 < /dev/console > /dev/console 2>&1
 
 #echo -e "Auto DMA test\n" >> /dev/console
-#/bin/busybox sh /bench/dmatest.sh /bench 1 < /dev/console > /dev/console 2>&1
+#/bin/busybox sh /bench/dmatest.sh < /dev/console > /dev/console 2>&1
 
 #echo -e "Auto Litmus test\n" >> /dev/console
 #/bin/busybox sh /bench/litmus.sh /bench 4 7 < /dev/console > /dev/console 2>&1

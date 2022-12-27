@@ -226,6 +226,7 @@ function build_initramfs()
 	cp -rf $SCRIPT/config/$INITRAMFS_INIT $TOP/obj/riscv-initramfs-init
 	cp -rf $SCRIPT/bench/bench-auto.sh $TOP/$BENCH_BIN_DIR/bench-auto.sh
 	cp -rf $SCRIPT/bench/bench-auto-mp.sh $TOP/$BENCH_BIN_DIR/bench-auto-mp.sh
+	cp -rf $SCRIPT/bench/dmatest.sh $TOP/$BENCH_BIN_DIR/dmatest.sh
 	cd $TOP/$INITRAMFS_DIR
 	cp -av $TOP/obj/busybox-$ARCH/_install/* .
 	if [ -x ./bin ]
